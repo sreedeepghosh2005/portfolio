@@ -4,14 +4,11 @@
 🧠 WHO_AM_I
 > initializing profile...
 
-I am Sreedeep Ghosh
-A Full Stack AI-ML Developer
+Name      : Sreedeep Ghosh
+Role      : Full Stack AI-ML Developer
 
-> mission:
-Building systems that think, adapt, and stand out
-
-> philosophy:
-"Technology should feel powerful, not ordinary"
+Mission   : Build systems that think, adapt, and scale
+Vision    : Technology should feel powerful, not ordinary
 🌐 LIVE_SYSTEM
 
 🔗 https://sreedeepghosh2005.github.io/portfolio/
@@ -40,12 +37,15 @@ Building systems that think, adapt, and stand out
 > learning: advanced deep learning
 > focus: real-world systems
 📁 PROJECT_STRUCTURE
-portfolio/
- ┣ Assets/
- ┃ ┣ images/
- ┃ ┗ Resume/
- ┣ index.html
- ┗ README.md
+
+```
+.
+├── Assets/
+│   ├── images/          # Project thumbnails & Avatar
+│   └── Resume/          # CV PDF file
+├── index.html           # Main Entry Point
+└── README.md            # You are here
+```
 🚀 RUN_LOCALLY
 git clone https://github.com/sreedeepghosh2005/portfolio.git
 cd portfolio
@@ -66,8 +66,4 @@ If you like this project:
 > give_star ⭐
 > fork_repo 🍴
 > share 🚀
-<p align="center">
-
-💀 SREEDEEP.exe // SYSTEM ACTIVE // NO BUGS ONLY FEATURES
-
-</p>
+<p align="center"> 💀 <b>SREEDEEP.exe // SYSTEM ACTIVE // NO BUGS ONLY FEATURES</b> </p>
