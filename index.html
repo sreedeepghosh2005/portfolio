@@ -75,6 +75,31 @@
 }
 </script>
 
+    <!-- Motion bootstrap: `js` gates the hide-until-animated styles; if
+         Assets/js/animations.js never runs, it is removed again so content stays visible. -->
+    <script>
+        (function (d, w) {
+            var h = d.documentElement;
+            h.classList.add('js');
+            try {
+                var ss = w.sessionStorage;
+                var rm = w.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                // ?intro replays both intros (handy for testing).
+                if (/[?&]intro\b/.test(w.location.search)) { ss.removeItem('sd-intro'); ss.removeItem('sd-pc'); }
+                if (ss.getItem('sd-intro') || rm) h.classList.add('skip-intro');
+                // 3D PC intro (Assets/js/pc-intro.js): first visit per session only.
+                if (ss.getItem('sd-pc') || rm) h.classList.add('skip-pc');
+                else h.classList.add('is-pc-intro');
+            } catch (e) { h.classList.add('skip-intro'); h.classList.add('skip-pc'); }
+            d.addEventListener('DOMContentLoaded', function () {
+                if (!w.__sdMotion) {
+                    h.classList.remove('js', 'is-pc-intro');
+                    h.classList.add('skip-intro', 'skip-pc');
+                }
+            });
+        })(document, window);
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -129,14 +154,7 @@
             background-size: 40px 40px, 100px 100px, 100px 100px;
         }
 
-        /* Custom Cursor */
-        #cursor {
-            pointer-events: none;
-            position: fixed;
-            z-index: 9999;
-            mix-blend-mode: difference;
-            transition: width 0.2s, height 0.2s, background-color 0.2s, transform 0.1s;
-        }
+        /* Custom cursor + scroll reveal styles live in Assets/css/animations.css */
 
         /* Animations */
         .marquee-container {
@@ -210,18 +228,6 @@
             /* Firefox */
         }
 
-        /* Reveal Animation */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         /* Glitch Effect on Hover */
         .glitch-hover:hover {
             animation: glitch-anim 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
@@ -254,6 +260,16 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="Assets/css/animations.css">
+    <link rel="stylesheet" href="Assets/css/pc-intro.css?v=2">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 
 <body class="text-neo-black font-display antialiased selection:bg-neo-black selection:text-neo-yellow">
@@ -262,6 +278,25 @@
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
+    <!-- Boot screen: shown once per session (see Assets/js/animations.js) -->
+    <div id="preloader" aria-hidden="true">
+        <div class="pl-inner">
+            <div class="pl-title">SREEDEEP<span>.exe</span></div>
+            <div class="pl-line">&gt; booting portfolio<span class="blink">_</span></div>
+            <div class="pl-bar"><span></span></div>
+            <div class="pl-meta"><span>LOADING MODULES</span><span><span class="pl-count">000</span>%</span></div>
+        </div>
+    </div>
+
+    <!-- 3D gaming PC intro: click the monitor to enter (see Assets/js/pc-intro.js) -->
+    <div id="pc-intro" role="dialog" aria-label="Intro: click the monitor to enter the site">
+        <canvas id="pc-canvas" aria-hidden="true"></canvas>
+        <div class="pc-loading" aria-hidden="true">&gt; loading 3D desk<span class="blink">_</span></div>
+        <div class="pc-tag" aria-hidden="true">SREEDEEP.exe // DESK_01</div>
+        <p class="pc-hint"><span class="pc-hint-text">&gt; CLICK THE MONITOR</span><span class="blink">_</span></p>
+        <button class="pc-skip cursor-hover" type="button">ENTER SITE &rarr;</button>
+    </div>
+
     <div id="cursor" class="w-6 h-6 bg-white rounded-full border-2 border-black hidden lg:block"></div>
 
     <div class="fixed top-0 left-0 h-2 bg-neo-green z-[60] border-b-2 border-black" id="progressBar" style="width: 0%">
@@ -269,7 +304,7 @@
 
     <nav class="fixed top-0 w-full z-50 px-4 py-4 pointer-events-none">
         <div class="max-w-7xl mx-auto flex justify-between items-center pointer-events-auto">
-            <a href="#"
+            <a href="#" data-magnetic="0.25"
                 class="bg-neo-white border-2 border-black px-4 py-1 text-2xl font-black shadow-hard hover:bg-neo-yellow transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none cursor-hover">
                 SREEDEEP.exe
             </a>
@@ -283,7 +318,7 @@
                     class="px-3 py-1 font-mono font-bold text-sm hover:bg-black hover:text-white transition-colors cursor-hover">/LOGS</a>
                 <a href="#projects"
                     class="px-3 py-1 font-mono font-bold text-sm hover:bg-black hover:text-white transition-colors cursor-hover">/WORK</a>
-                <a href="#contact"
+                <a href="#contact" data-magnetic="0.3"
                     class="px-3 py-1 font-mono font-bold text-sm bg-neo-yellow border border-black hover:bg-neo-pink transition-colors cursor-hover">HIRE
                     ME</a>
             </div>
@@ -292,23 +327,30 @@
 
     <section
         class="min-h-screen flex flex-col justify-center items-center px-4 pt-20 relative overflow-hidden border-b-4 border-black">
-        <div
-            class="absolute top-1/3 left-[10%] w-16 h-16 bg-neo-blue border-4 border-black shadow-hard animate-bounce hidden lg:block rotate-12">
+        <!-- Floating shapes: outer div = pointer parallax + pop-in, inner = idle float -->
+        <div class="hero-shape absolute top-1/3 left-[10%] hidden lg:block" data-depth="1.2" style="--d:.35s">
+            <div class="w-16 h-16 bg-neo-blue border-4 border-black shadow-hard rotate-12 anim-float"></div>
         </div>
-        <div
-            class="absolute bottom-1/3 right-[10%] w-24 h-24 bg-neo-pink rounded-full border-4 border-black shadow-hard hidden lg:block animate-pulse">
+        <div class="hero-shape absolute bottom-1/3 right-[10%] hidden lg:block" data-depth="-0.8" style="--d:.5s">
+            <div class="w-24 h-24 bg-neo-pink rounded-full border-4 border-black shadow-hard anim-float-slow"></div>
         </div>
-        <div class="absolute top-20 right-20 text-9xl opacity-5 font-black select-none pointer-events-none">CODE</div>
+        <div class="hero-shape absolute top-[18%] left-[6%] hidden lg:block" data-depth="-1.4" style="--d:.65s">
+            <div class="bg-neo-green border-4 border-black shadow-hard px-3 py-1 font-mono font-bold -rotate-6 anim-float-slow">&lt;/AI&gt;</div>
+        </div>
+        <div class="hero-shape absolute bottom-[14%] left-[18%] hidden lg:block" data-depth="0.9" style="--d:.8s">
+            <div class="w-14 h-14 bg-neo-yellow border-4 border-black shadow-hard rounded-full grid place-items-center text-2xl anim-spin"><i class="ri-asterisk"></i></div>
+        </div>
+        <div class="absolute top-20 right-20 text-9xl opacity-5 font-black select-none pointer-events-none" data-parallax="-0.35">CODE</div>
 
         <div class="relative z-10 text-center max-w-5xl">
             <div
                 class="inline-block bg-neo-white border-2 border-black px-4 py-1 mb-6 shadow-hard rotate-[-2deg] reveal">
-                <span class="font-mono font-bold text-neo-green bg-black px-2 mr-2">●</span>
+                <span class="ping font-mono font-bold text-neo-green bg-black px-2 mr-2">●</span>
                 <span class="font-mono font-bold">SYSTEM STATUS: ONLINE</span>
             </div>
 
-            <h1
-                class="text-[13vw] md:text-[10vw] leading-[0.8] font-black uppercase tracking-tighter mb-6 reveal mix-blend-darken">
+            <h1 data-split="hero" data-wave
+                class="text-[13vw] md:text-[10vw] leading-[0.8] font-black uppercase tracking-tighter mb-6 mix-blend-darken">
                 FULL STACK AI-ML<br>
                 <span class="text-white text-stroke-black" style="-webkit-text-stroke: 3px black;">DEVELOPER</span>
             </h1>
@@ -316,43 +358,51 @@
             <p
                 class="font-mono text-lg md:text-2xl max-w-2xl mx-auto mb-10 bg-neo-yellow border-2 border-black p-4 shadow-hard reveal rotate-1">
                 I build digital products that refuse to be boring. <br>
-                <b>React • Python • Java • Node</b>
+                <b class="tech-cycle"><span class="tech">React</span> • <span class="tech">Python</span> • <span class="tech">Java</span> • <span class="tech">Node</span></b>
             </p>
 
             <div class="flex flex-col md:flex-row justify-center gap-6 reveal">
-                <a href="#projects"
+                <a href="#projects" data-magnetic="0.2"
                     class="bg-black text-white border-2 border-black px-10 py-5 text-xl font-bold shadow-hard hover:bg-neo-green hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-hover">
                     VIEW DATABASE
                 </a>
-                <a href="Assets/Resume/SreedeepResume.pdf" download
+                <a href="Assets/Resume/SreedeepResume.pdf" download data-magnetic="0.2"
                     class="bg-neo-white text-black border-2 border-black px-10 py-5 text-xl font-bold shadow-hard hover:bg-neo-pink hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-hover flex items-center justify-center gap-2">
                     <i class="ri-download-line"></i> DOWNLOAD CV
                 </a>
             </div>
         </div>
+
+        <a href="#about" aria-label="Scroll to About"
+            class="scroll-cue absolute bottom-8 right-10 z-10 hidden md:flex flex-col items-center gap-2 font-mono text-xs font-bold tracking-[0.3em] cursor-hover">
+            SCROLL<span class="scroll-cue-line"></span>
+        </a>
     </section>
 
     <div class="border-b-4 border-black bg-neo-blue py-3 relative z-20">
-        <div class="marquee-container font-mono font-bold text-2xl text-white">
-            <div class="marquee-content">
-                /// OPEN FOR WORK /// FULL STACK DEVELOPMENT /// UI/UX DESIGN /// WEB3 READY /// ACCESSIBLE /// FAST ///
-                SECURE /// OPEN FOR WORK /// FULL STACK DEVELOPMENT ///
+        <!-- Four identical copies so the -50% loop is seamless on wide screens -->
+        <div class="marquee-container marquee-fade font-mono font-bold text-2xl text-white">
+            <div class="marquee-content whitespace-nowrap">
+                <span class="pr-6">/// OPEN FOR WORK /// FULL STACK DEVELOPMENT /// UI/UX DESIGN /// WEB3 READY /// ACCESSIBLE /// FAST /// SECURE</span>
+                <span class="pr-6" aria-hidden="true">/// OPEN FOR WORK /// FULL STACK DEVELOPMENT /// UI/UX DESIGN /// WEB3 READY /// ACCESSIBLE /// FAST /// SECURE</span>
+                <span class="pr-6" aria-hidden="true">/// OPEN FOR WORK /// FULL STACK DEVELOPMENT /// UI/UX DESIGN /// WEB3 READY /// ACCESSIBLE /// FAST /// SECURE</span>
+                <span class="pr-6" aria-hidden="true">/// OPEN FOR WORK /// FULL STACK DEVELOPMENT /// UI/UX DESIGN /// WEB3 READY /// ACCESSIBLE /// FAST /// SECURE</span>
             </div>
         </div>
     </div>
 
     <section id="about" class="py-24 px-4 max-w-7xl mx-auto border-x-4 border-black bg-white my-12 shadow-hard-lg">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
-            <div class="md:col-span-4 reveal">
-                <div class="aspect-square bg-gray-200 border-4 border-black relative shadow-hard overflow-hidden group">
+            <div class="md:col-span-4 reveal" data-reveal="left">
+                <div class="img-wipe aspect-square bg-gray-200 border-4 border-black relative shadow-hard overflow-hidden group">
                     <img src="Assets/images/AVATAR.png" alt="Sreedeep"
                         class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
                     <span
                         class="absolute top-2 left-2 bg-neo-red text-white px-2 font-mono text-xs border border-black z-10">AVATAR.JPG</span>
                 </div>
             </div>
-            <div class="md:col-span-8 flex flex-col justify-center reveal">
-                <h2 class="text-6xl font-black uppercase mb-6">Who am I?</h2>
+            <div class="md:col-span-8 flex flex-col justify-center reveal" data-reveal="right">
+                <h2 data-split class="text-6xl font-black uppercase mb-6">Who am I?</h2>
                 <p class="font-mono text-xl leading-relaxed mb-6">
                     I am Sreedeep. A full stack AI-ML developer who believes technology should feel powerful, not ordinary. I build systems that <span
                         class="bg-neo-yellow px-1 border border-black">think, adapt, and stand out,</span> back to code.
@@ -382,7 +432,7 @@
 
         <div class="max-w-[1400px] mx-auto px-4 relative z-10">
             <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b-4 border-white pb-4">
-                <h2 class="text-6xl md:text-8xl font-black uppercase text-white tracking-tighter">
+                <h2 data-split class="text-6xl md:text-8xl font-black uppercase text-white tracking-tighter">
                     TECH<span class="text-neo-green">_STACK</span>
                 </h2>
                 <div class="flex items-center gap-2 mb-2 md:mb-4">
@@ -518,7 +568,7 @@
     </section>
 
     <section id="experience" class="py-24 px-4 max-w-7xl mx-auto">
-        <h2 class="text-5xl md:text-8xl font-black uppercase mb-12 tracking-tighter text-center">
+        <h2 data-split class="text-5xl md:text-8xl font-black uppercase mb-12 tracking-tighter text-center">
             Experience<span class="text-neo-red">_Log</span>
         </h2>
 
@@ -536,6 +586,7 @@
                         <li>Building and training ML models using Python, TensorFlow, and scikit-learn</li>
                         <li>Exploring deep learning, computer vision, and model optimization techniques</li>
                         <li>Actively engaging in knowledge sharing sessions and technical discussions within the community</li>
+                    </ul>
                 </div>
             </div>
 
@@ -614,7 +665,7 @@
 
         <!-- HEADER -->
         <div class="flex justify-between items-center mb-6 border-b-2 border-white pb-3">
-            <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
+            <h2 data-split class="text-4xl md:text-5xl font-black uppercase tracking-tight">
                 SYSTEM<span class="text-neo-green">_METRICS</span>
             </h2>
             <div class="flex items-center gap-2">
@@ -624,12 +675,12 @@
         </div>
 
         <!-- TERMINAL -->
-        <div class="border-4 border-white/20 bg-black p-6 shadow-[8px_8px_0_rgba(0,0,0,1)] font-mono text-sm">
+        <div class="crt border-4 border-white/20 bg-black p-6 shadow-[8px_8px_0_rgba(0,0,0,1)] font-mono text-sm">
 
-            <!-- TYPING COMMAND -->
+            <!-- TYPING COMMAND (text + final numbers ship in the HTML; animations.js replays them) -->
             <div class="flex items-center gap-2 mb-6 text-neo-green">
                 <span class="text-white/40">$</span>
-                <span id="typing-text"></span>
+                <span id="typing-text">init --system-metrics</span>
                 <span class="blink">_</span>
             </div>
 
@@ -638,18 +689,18 @@
 
                 <div class="metric-box">
                     <p>MODELS_TRAINED</p>
-                    <h3 data-target="10">0</h3>
+                    <h3 data-target="10">10</h3>
                 </div>
 
                 <div class="metric-box">
                     <p>PROJECTS_BUILT</p>
-                    <h3 data-target="8">0</h3>
+                    <h3 data-target="8">8</h3>
                 </div>
 
                 <div class="metric-box">
                     <p>DATA_PROCESSED</p>
                     <div class="flex items-end gap-1">
-                        <h3 data-target="50">0</h3>
+                        <h3 data-target="50">50</h3>
                         <span class="suffix">K+</span>
                     </div>
                 </div>
@@ -657,7 +708,7 @@
                 <div class="metric-box">
                     <p>MODEL_ACCURACY</p>
                     <div class="flex items-end gap-1">
-                        <h3 data-target="90">0</h3>
+                        <h3 data-target="90">90</h3>
                         <span class="suffix">%</span>
                     </div>
                 </div>
@@ -749,14 +800,20 @@
 
 /* STATUS ANIMATION */
 .status-lines p {
+  transform: translateX(0);
+}
+/* Hidden + animated only when JS is running; animations.js adds .in on scroll */
+.js .status-lines p {
   opacity: 0;
   transform: translateX(-10px);
+}
+.js .status-lines.in p {
   animation: fadeIn 0.5s forwards;
 }
-.status-lines p:nth-child(1){ animation-delay: 0.5s;}
-.status-lines p:nth-child(2){ animation-delay: 1s;}
-.status-lines p:nth-child(3){ animation-delay: 1.5s;}
-.status-lines p:nth-child(4){ animation-delay: 2s;}
+.status-lines.in p:nth-child(1){ animation-delay: 0.5s;}
+.status-lines.in p:nth-child(2){ animation-delay: 1s;}
+.status-lines.in p:nth-child(3){ animation-delay: 1.5s;}
+.status-lines.in p:nth-child(4){ animation-delay: 2s;}
 
 @keyframes fadeIn {
   to { opacity: 1; transform: translateX(0);}
@@ -764,45 +821,12 @@
 
 </style>
 
-<!-- SCRIPT -->
-<script>
-
-/* TYPING EFFECT */
-const text = "init --system-metrics";
-let i = 0;
-function type() {
-  if (i < text.length) {
-    document.getElementById("typing-text").innerHTML += text.charAt(i);
-    i++;
-    setTimeout(type, 50);
-  }
-}
-type();
-
-/* COUNTER ANIMATION */
-const counters = document.querySelectorAll("[data-target]");
-counters.forEach(counter => {
-  let update = () => {
-    let target = +counter.getAttribute("data-target");
-    let count = +counter.innerText;
-    let speed = target / 50;
-
-    if (count < target) {
-      counter.innerText = Math.ceil(count + speed);
-      setTimeout(update, 30);
-    } else {
-      counter.innerText = target;
-    }
-  };
-  update();
-});
-
-</script>
+<!-- Typing + counters are driven by Assets/js/animations.js (on scroll) -->
 
 
     <section id="projects" class="py-24 bg-neo-yellow border-t-4 border-black px-4 overflow-hidden">
     <div class="max-w-7xl mx-auto">
-        <h2 class="text-6xl md:text-9xl font-black mb-16 uppercase tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] text-stroke-black"
+        <h2 data-split class="text-6xl md:text-9xl font-black mb-16 uppercase tracking-tighter text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] text-stroke-black"
             style="-webkit-text-stroke: 3px black;">
             Selected Works
         </h2>
@@ -810,8 +834,8 @@ counters.forEach(counter => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
 
             <!-- Deepfake Detection -->
-            <article class="reveal group bg-white border-4 border-black p-4 shadow-hard">
-                <div class="bg-black border-2 border-black aspect-video relative overflow-hidden mb-6">
+            <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard">
+                <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF2A2A">
                     <img src="Assets/images/deepfake.png"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
@@ -834,8 +858,8 @@ counters.forEach(counter => {
             </article>
 
             <!-- Decenter Notes -->
-            <article class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
-                <div class="bg-black border-2 border-black aspect-video relative overflow-hidden mb-6">
+            <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
+                <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#3B82F6">
                     <img src="Assets/images/blockchain.png"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
@@ -858,8 +882,8 @@ counters.forEach(counter => {
             </article>
 
             <!-- GWLR Detection -->
-            <article class="reveal group bg-white border-4 border-black p-4 shadow-hard">
-                <div class="bg-black border-2 border-black aspect-video relative overflow-hidden mb-6">
+            <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard">
+                <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF70A6">
                     <img src="Assets/images/gwlr.png"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
@@ -882,8 +906,8 @@ counters.forEach(counter => {
             </article>
 
             <!-- eDNA Taxonomy -->
-            <article class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
-                <div class="bg-black border-2 border-black aspect-video relative overflow-hidden mb-6">
+            <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
+                <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF9F1C">
                     <img src="Assets/images/edna.png"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
@@ -908,9 +932,9 @@ counters.forEach(counter => {
         </div>
     </div>
 </section>
-    <section id="skills" class="py-24 bg-neo-black border-t-4 border-black overflow-hidden relative">
+    <section id="core-skills" class="py-24 bg-neo-black border-t-4 border-black overflow-hidden relative">
     <div class="max-w-7xl mx-auto px-4">
-        <div class="flex items-center gap-2 mb-16 bg-white/5 border-2 border-white/10 p-4 inline-flex shadow-hard shadow-neo-blue/20">
+        <div class="reveal flex items-center gap-2 mb-16 bg-white/5 border-2 border-white/10 p-4 inline-flex shadow-hard shadow-neo-blue/20">
             <div class="flex gap-2">
                 <div class="h-3 w-3 bg-red-500 rounded-full border border-black"></div>
                 <div class="h-3 w-3 bg-yellow-500 rounded-full border border-black"></div>
@@ -921,7 +945,7 @@ counters.forEach(counter => {
         </div>
     </div>
 
-    <div class="marquee-container group cursor-hover">
+    <div class="marquee-container marquee-fade group cursor-hover">
         <div class="marquee-content flex gap-8 py-12 px-4 select-none">
 
             <!-- SKILL 1 -->
@@ -1090,15 +1114,15 @@ counters.forEach(counter => {
     </div>
 </section>
     <section id="contact" class="py-24 px-4 max-w-5xl mx-auto">
-        <div class="bg-white border-4 border-black shadow-hard-xl p-8 md:p-12 relative reveal mt-12">
+        <div class="bg-white border-4 border-black shadow-hard-xl p-8 md:p-12 relative reveal mt-12" data-reveal="scale">
             <div
-                class="absolute -top-10 -left-6 bg-neo-yellow border-4 border-black px-6 py-2 shadow-hard rotate-[-5deg]">
+                class="absolute -top-10 -left-6 bg-neo-yellow border-4 border-black px-6 py-2 shadow-hard rotate-[-5deg] anim-wobble">
                 <span class="font-black text-2xl">START A PROJECT</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div>
-                    <h2 class="text-6xl font-black uppercase mb-6 leading-[0.85]">Let's<br>Talk<br>Code.</h2>
+                    <h2 data-split class="text-6xl font-black uppercase mb-6 leading-[0.85]">Let's<br>Talk<br>Code.</h2>
                     <p class="font-mono text-lg mb-8 text-gray-600">
                         I am currently available for freelance work and open to full-time opportunities.
                     </p>
@@ -1122,7 +1146,7 @@ counters.forEach(counter => {
                 </div>
 
                 <form id="contact-form" class="space-y-6 bg-gray-50 p-6 border-2 border-black"
-                    onsubmit="event.preventDefault(); this.innerHTML='<div class=\'py-20 text-center\'><i class=\'ri-checkbox-circle-fill text-6xl text-neo-green mb-4 block\'></i><h3 class=\'text-2xl font-black uppercase\'>Transmission Received</h3><p class=\'font-mono text-sm mt-2\'>System response initialized. I will reach out shortly.</p></div>'">
+                    onsubmit="return false">
                     <div class="flex flex-col">
                         <label class="font-mono font-bold mb-1 uppercase text-xs">Identity</label>
                         <input type="text" placeholder="NAME / COMPANY"
@@ -1149,14 +1173,14 @@ counters.forEach(counter => {
 
     <footer class="bg-black text-white py-16 px-4 border-t-8 border-neo-green font-mono relative overflow-hidden">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
-            <div class="col-span-1 md:col-span-2">
-                <h2 class="text-4xl font-black mb-6">SREEDEEP.</h2>
+            <div class="col-span-1 md:col-span-2 reveal">
+                <h2 data-split data-wave class="text-4xl font-black mb-6 cursor-hover">SREEDEEP.</h2>
                 <p class="text-gray-400 max-w-sm">
                     Designing for the future with the raw aesthetics of the past. No cookies, no trackers, just code.
                 </p>
             </div>
 
-            <div>
+            <div class="reveal">
                 <h3 class="font-bold text-neo-green mb-4 border-b border-gray-700 pb-2">SITEMAP</h3>
                 <ul class="space-y-2 text-gray-400">
                     <li><a href="#"
@@ -1174,17 +1198,17 @@ counters.forEach(counter => {
                 </ul>
             </div>
 
-            <div>
+            <div class="reveal">
                 <h3 class="font-bold text-neo-green mb-4 border-b border-gray-700 pb-2">SOCIALS</h3>
                 <div class="flex gap-4">
                     <a href="https://www.instagram.com/___.sreedeep.___?igsh=cWdtcnJmOTdpYjZj"
-                        class="text-2xl hover:text-neo-pink transition-colors cursor-hover"><i
+                        data-magnetic="0.45" class="inline-block text-2xl hover:text-neo-pink transition-colors cursor-hover"><i
                             class="ri-instagram-fill"></i></a>
                     <a href="https://github.com/sreedeepghosh2005"
-                        class="text-2xl hover:text-neo-yellow transition-colors cursor-hover"><i
+                        data-magnetic="0.45" class="inline-block text-2xl hover:text-neo-yellow transition-colors cursor-hover"><i
                             class="ri-github-fill"></i></a>
                     <a href="https://www.linkedin.com/in/sreedeep-ghosh-186b33324?utm_source=share_via&utm_content=profile&utm_medium=member_android"
-                        class="text-2xl hover:text-neo-purple transition-colors cursor-hover"><i
+                        data-magnetic="0.45" class="inline-block text-2xl hover:text-neo-purple transition-colors cursor-hover"><i
                             class="ri-linkedin-fill"></i></a>
                 </div>
             </div>
@@ -1195,63 +1219,13 @@ counters.forEach(counter => {
         </div>
 
         <div
-            class="absolute bottom-0 left-0 w-full text-[20vw] font-black text-white opacity-[0.03] leading-none select-none pointer-events-none text-center">
+            data-rise class="absolute bottom-0 left-0 w-full text-[20vw] font-black text-white opacity-[0.03] leading-none select-none pointer-events-none text-center">
             BANG
         </div>
     </footer>
 
-    <script>
-        // Custom Cursor Logic
-        const cursor = document.getElementById('cursor');
-        const hoverElements = document.querySelectorAll('.cursor-hover, a, button, input, textarea');
-
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursor.style.transform = `translate(-50%, -50%)`;
-        });
-
-        // Add hover effect to cursor
-        hoverElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursor.style.width = '60px';
-                cursor.style.height = '60px';
-                cursor.style.backgroundColor = '#FBFF48'; // Neo Yellow
-                cursor.style.mixBlendMode = 'normal';
-                cursor.style.border = '2px solid black';
-            });
-            el.addEventListener('mouseleave', () => {
-                cursor.style.width = '24px';
-                cursor.style.height = '24px';
-                cursor.style.backgroundColor = '#fff';
-                cursor.style.mixBlendMode = 'difference';
-                cursor.style.border = 'none';
-            });
-        });
-
-       
-        
-
-        // Scroll Reveal Logic
-        const revealElements = document.querySelectorAll('.reveal');
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        revealElements.forEach(el => revealObserver.observe(el));
-
-        // Scroll Progress Bar
-        window.onscroll = function () {
-            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            let scrolled = (winScroll / height) * 100;
-            document.getElementById("progressBar").style.width = scrolled + "%";
-        };
-    </script>
+    <script src="Assets/js/animations.js"></script>
+    <script type="module" src="Assets/js/pc-intro.js?v=6"></script>
 </body>
 
 

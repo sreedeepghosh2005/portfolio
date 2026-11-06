@@ -1,0 +1,293 @@
+/* ==========================================================================
+   SREEDEEP.exe — 3D gaming PC intro overlay
+   Pairs with Assets/js/pc-intro.js. The overlay only shows while
+   `html.is-pc-intro` is set (first visit per session, see the head bootstrap
+   in index.html), plus during its own fade-out (`.is-done`).
+   ========================================================================== */
+
+#pc-intro {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9990; /* under #preloader (10000) and #cursor (9999) */
+    overflow: hidden;
+    background-color: #FFFDF5;
+    background-image:
+        radial-gradient(#000 1px, transparent 1px),
+        linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+        linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+    background-size: 40px 40px, 100px 100px, 100px 100px;
+    transition: opacity .7s cubic-bezier(.16, 1, .3, 1);
+}
+
+.js.is-pc-intro #pc-intro,
+#pc-intro.is-done { display: block; }
+
+#pc-intro.is-done { opacity: 0; pointer-events: none; }
+
+html.is-pc-intro,
+html.is-pc-intro body { overflow: hidden; }
+
+#pc-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity .8s ease;
+    touch-action: manipulation;
+}
+#pc-intro.is-ready #pc-canvas { opacity: 1; }
+
+.pc-loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    letter-spacing: .08em;
+    pointer-events: none;
+    transition: opacity .4s ease;
+}
+#pc-intro.is-ready .pc-loading { opacity: 0; }
+
+/* Cream wash at the end of the zoom, so the hand-off to the site is smooth. */
+.pc-flash {
+    position: absolute;
+    inset: 0;
+    background: #FFFDF5;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pc-tag,
+.pc-hint,
+.pc-skip {
+    position: absolute;
+    z-index: 1;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 800;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    transition: opacity .3s ease, background-color .2s ease, translate .2s ease, box-shadow .2s ease;
+}
+
+.pc-tag {
+    top: 24px;
+    left: 24px;
+    background: #FFFDF5;
+    padding: 4px 12px;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.pc-hint {
+    left: 50%;
+    bottom: 7%;
+    translate: -50% 0;
+    background: #FBFF48;
+    padding: 10px 18px;
+    font-size: clamp(13px, 1.6vw, 18px);
+    white-space: nowrap;
+    pointer-events: none;
+    rotate: -1deg;
+}
+.pc-hint.is-hot { background: #33FF57; }
+
+.pc-skip {
+    top: 24px;
+    right: 24px;
+    background: #121212;
+    color: #FFFDF5;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+.pc-skip:hover,
+.pc-skip:focus-visible {
+    background: #FF70A6;
+    color: #121212;
+    translate: 2px 2px;
+    box-shadow: 2px 2px 0 0 #000;
+    outline: none;
+}
+
+#pc-intro.is-entering .pc-tag,
+#pc-intro.is-entering .pc-hint,
+#pc-intro.is-entering .pc-skip { opacity: 0; pointer-events: none; }
+
+@media (max-width: 639px) {
+    .pc-tag { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   CV chatbot panel (Assets/js/cv-bot.js). Opens bottom-right, so the
+   figurine on the left of the desk stays visible.
+   -------------------------------------------------------------------------- */
+.cvb {
+    position: absolute;
+    z-index: 2;
+    right: 24px;
+    bottom: 24px;
+    width: min(400px, calc(100vw - 32px));
+    height: min(560px, calc(100vh - 110px));
+    display: flex;
+    flex-direction: column;
+    background: #FFFDF5;
+    border: 3px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    font-family: "Space Grotesk", sans-serif;
+    color: #121212;
+    opacity: 0;
+    translate: 0 16px;
+    transition: opacity .25s ease, translate .25s cubic-bezier(.16, 1, .3, 1);
+}
+.cvb.is-open { opacity: 1; translate: 0 0; }
+.cvb[hidden] { display: none; }
+
+.cvb-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #33FF57;
+    border-bottom: 3px solid #000;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 800;
+}
+.cvb-dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    background: #FF70A6;
+    flex: none;
+}
+.cvb-title { flex: 1; font-size: 15px; line-height: 1.1; }
+.cvb-title small { display: block; font-size: 10px; letter-spacing: .06em; opacity: .75; }
+.cvb-close {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #000;
+    background: #FFFDF5;
+    font-weight: 800;
+    box-shadow: 2px 2px 0 0 #000;
+    cursor: pointer;
+}
+.cvb-close:hover, .cvb-close:focus-visible { background: #FF70A6; outline: none; }
+
+.cvb-log {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-image: radial-gradient(#0000001a 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+.cvb-msg {
+    max-width: 88%;
+    padding: 9px 12px;
+    border: 2px solid #000;
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.cvb-bot { align-self: flex-start; background: #fff; box-shadow: 3px 3px 0 0 #000; }
+.cvb-user {
+    align-self: flex-end;
+    background: #FBFF48;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    box-shadow: -3px 3px 0 0 #000;
+}
+.cvb-msg ul { margin: 6px 0 4px; padding-left: 18px; list-style: square; }
+.cvb-msg li { margin: 2px 0; }
+.cvb-msg a { color: #121212; font-weight: 700; text-decoration: underline; text-decoration-color: #33FF57; text-decoration-thickness: 3px; }
+.cvb-msg a:hover { background: #33FF57; }
+.cvb-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.cvb-tags i {
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border: 1.5px solid #000;
+    background: #121212;
+    color: #33FF57;
+}
+
+.cvb-typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+.cvb-typing i {
+    width: 7px;
+    height: 7px;
+    background: #121212;
+    border-radius: 50%;
+    animation: cvb-dot 1s infinite ease-in-out;
+}
+.cvb-typing i:nth-child(2) { animation-delay: .15s; }
+.cvb-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes cvb-dot { 0%, 80%, 100% { opacity: .25; translate: 0 0; } 40% { opacity: 1; translate: 0 -4px; } }
+
+.cvb-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 12px;
+}
+.cvb-chips:not(:empty) { padding: 8px 12px; border-top: 2px dashed #0003; }
+.cvb-chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border: 2px solid #000;
+    background: #fff;
+    box-shadow: 2px 2px 0 0 #000;
+    cursor: pointer;
+    transition: translate .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.cvb-chip:hover, .cvb-chip:focus-visible { background: #FF70A6; translate: 1px 1px; box-shadow: 1px 1px 0 0 #000; outline: none; }
+
+.cvb-form {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    border-top: 3px solid #000;
+    background: #fff;
+}
+.cvb-input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 10px;
+    border: 2px solid #000;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 16px; /* 16px stops iOS from zooming in on focus */
+    background: #FFFDF5;
+}
+.cvb-input:focus { outline: none; background: #fff; box-shadow: inset 0 0 0 2px #33FF57; }
+.cvb-send {
+    width: 44px;
+    border: 2px solid #000;
+    background: #121212;
+    color: #33FF57;
+    font-size: 18px;
+    box-shadow: 3px 3px 0 0 #000;
+    cursor: pointer;
+}
+.cvb-send:hover, .cvb-send:focus-visible { background: #33FF57; color: #121212; outline: none; }
+
+/* While chatting, the bottom hint would sit under the panel on narrow screens. */
+#pc-intro.is-chatting .pc-hint { opacity: 0; }
+#pc-intro.is-entering .cvb { opacity: 0; pointer-events: none; }
+
+@media (max-width: 639px) {
+    .cvb { right: 8px; left: 8px; bottom: 8px; width: auto; height: min(70vh, 520px); box-shadow: 5px 5px 0 0 #000; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #pc-intro { display: none !important; }
+}

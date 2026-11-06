@@ -1,0 +1,281 @@
+/* ==========================================================================
+   SREEDEEP.exe — motion layer
+   Pairs with Assets/js/animations.js.
+
+   Rules of the road:
+   - Anything that HIDES content is gated behind `html.js`, so the page stays
+     fully readable if the script never runs (the head bootstrap removes `.js`
+     when animations.js fails to load).
+   - Motion uses the individual `translate` / `scale` / `rotate` properties so
+     it composes with Tailwind's `transform`-based utilities (rotate-1,
+     hover:translate-x-1, …) instead of overwriting them.
+   - prefers-reduced-motion turns all of it off (bottom of file).
+   ========================================================================== */
+
+:root {
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+    --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+}
+
+/* ---------- Boot screen (first visit per session) ---------- */
+#preloader { display: none; }
+
+.js:not(.skip-intro) #preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    background: #121212;
+    color: #FFFDF5;
+    font-family: "JetBrains Mono", monospace;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 1s var(--ease-in-out);
+}
+
+#preloader.is-done { clip-path: inset(0 0 100% 0); pointer-events: none; }
+
+.pl-inner { width: min(380px, 80vw); }
+.pl-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 800;
+    font-size: clamp(40px, 9vw, 72px);
+    line-height: .9;
+    letter-spacing: -.04em;
+    margin-bottom: 20px;
+}
+.pl-title span { color: #33FF57; }
+.pl-line { font-weight: 700; font-size: 13px; margin-bottom: 12px; letter-spacing: .04em; opacity: .85; }
+.pl-bar { height: 18px; border: 2px solid #FFFDF5; padding: 2px; box-shadow: 4px 4px 0 #33FF57; }
+.pl-bar span { display: block; height: 100%; background: #33FF57; transform-origin: left; transform: scaleX(0); }
+.pl-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 11px; opacity: .6; letter-spacing: .08em; }
+
+html.is-booting, html.is-booting body { overflow: hidden; }
+
+/* ---------- Custom cursor (smoothed in JS) ---------- */
+#cursor {
+    pointer-events: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    opacity: 0;
+    will-change: transform;
+    transition: width .35s var(--ease-spring), height .35s var(--ease-spring),
+        background-color .2s ease, opacity .3s ease, scale .2s var(--ease-out);
+}
+#cursor.is-visible { opacity: 1; }
+#cursor.is-hover { width: 56px; height: 56px; background-color: #FBFF48; mix-blend-mode: normal; }
+#cursor.is-down { scale: .75; }
+
+/* No custom cursor below lg or on touch: give the native one back. */
+@media (max-width: 1023px), (hover: none) {
+    body { cursor: auto; }
+    #cursor { display: none !important; }
+}
+
+/* ---------- Nav ---------- */
+.js nav { translate: 0 -140%; transition: translate .8s var(--ease-out); }
+body.loaded nav { translate: none; }
+body.loaded nav.nav-hidden { translate: 0 -140%; }
+nav a.nav-active { background-color: #121212; color: #fff; }
+
+/* ---------- Scroll progress ---------- */
+#progressBar { width: 100% !important; transform-origin: 0 50%; transform: scaleX(0); }
+
+/* ---------- Scroll reveal ---------- */
+.js .reveal {
+    opacity: 0;
+    translate: 0 48px;
+    transition: opacity .8s var(--ease-out), translate 1s var(--ease-out),
+        rotate 1s var(--ease-out), scale 1s var(--ease-out);
+}
+.js .reveal[data-reveal="left"]  { translate: -64px 0; }
+.js .reveal[data-reveal="right"] { translate: 64px 0; }
+.js .reveal[data-reveal="scale"] { translate: 0 24px; scale: .92; }
+.js .reveal[data-reveal="tilt"]  { translate: 0 80px; rotate: 3deg; }
+.js .reveal.active { opacity: 1; translate: none; scale: none; rotate: none; }
+
+/* Side-slide reveals start ±64px off-axis; don't let them widen the page on phones. */
+.js body { overflow-x: clip; }
+
+/* ---------- Split-text headings ---------- */
+.js [data-split] { visibility: hidden; }
+.js [data-split].split-ready { visibility: visible; }
+[data-split] .word { display: inline-block; white-space: nowrap; }
+[data-split] .char { display: inline-block; }
+.js [data-split] .char {
+    opacity: 0;
+    translate: 0 .45em;
+    rotate: 10deg;
+    transition: opacity .6s var(--ease-out), translate .9s var(--ease-out), rotate .9s var(--ease-out);
+    transition-delay: calc(var(--i) * 28ms);
+}
+.js [data-split].in .char { opacity: 1; translate: none; rotate: none; }
+[data-wave].waving .char { animation: sd-wave .7s var(--ease-out) calc(var(--i) * 35ms); }
+
+@keyframes sd-wave {
+    0%, 100% { transform: none; }
+    40% { transform: translateY(-.12em) rotate(-4deg); }
+}
+
+/* ---------- Hero ---------- */
+.js .hero-shape { scale: 0; transition: scale 1s var(--ease-spring); }
+body.loaded .hero-shape { scale: 1; transition-delay: var(--d, .3s); }
+
+.anim-float { animation: sd-float 6s var(--ease-in-out) infinite; }
+.anim-float-slow { animation: sd-float 8s var(--ease-in-out) infinite reverse; }
+.anim-spin { animation: sd-spin 14s linear infinite; }
+.anim-wobble { animation: sd-wobble 5s var(--ease-in-out) infinite; }
+
+@keyframes sd-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -22px; } }
+@keyframes sd-spin { to { rotate: 360deg; } }
+@keyframes sd-wobble { 0%, 100% { rotate: 0deg; } 50% { rotate: 4deg; } }
+
+.tech-cycle .tech { padding: 0 .15em; transition: background-color .3s ease, color .3s ease; }
+.tech-cycle .tech.on { background-color: #121212; color: #FBFF48; }
+
+.ping { position: relative; }
+.ping::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid #33FF57;
+    animation: sd-ping 1.8s var(--ease-out) infinite;
+}
+@keyframes sd-ping { from { scale: 1; opacity: .9; } to { scale: 1.9; opacity: 0; } }
+
+.scroll-cue-line { display: block; width: 2px; height: 44px; background: rgba(0, 0, 0, .15); position: relative; overflow: hidden; }
+.scroll-cue-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40%;
+    background: #121212;
+    animation: sd-drip 1.8s var(--ease-in-out) infinite;
+}
+@keyframes sd-drip { from { translate: 0 -100%; } to { translate: 0 260%; } }
+.js .scroll-cue { opacity: 0; transition: opacity 1s ease 1.4s; }
+body.loaded .scroll-cue { opacity: 1; }
+@media (max-height: 640px) { html .scroll-cue { display: none; } }
+
+/* ---------- Marquees ---------- */
+.marquee-fade {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+/* ---------- Image wipe + zoom (about avatar, project shots) ---------- */
+.img-wipe::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: var(--wipe, #FBFF48);
+    transform-origin: right;
+    transform: scaleX(0);
+    transition: transform 1.1s var(--ease-in-out) .15s;
+    pointer-events: none;
+}
+.js .reveal:not(.active) .img-wipe::after { transform: scaleX(1); transition: none; }
+
+.img-wipe img { transition: scale 1.4s var(--ease-out), filter .5s ease, opacity .3s ease; }
+.js .reveal:not(.active) .img-wipe img { scale: 1.25; }
+.reveal.active .img-wipe:hover img,
+.reveal.active.group:hover .img-wipe img { scale: 1.06; }
+
+/* ---------- Project cards: 3D tilt ---------- */
+.js .reveal[data-tilt] {
+    transition: opacity .8s var(--ease-out), translate 1s var(--ease-out), rotate 1s var(--ease-out),
+        transform .7s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.js .reveal[data-tilt].is-tilting { transition-duration: .8s, 1s, 1s, .15s, .3s; }
+[data-tilt]:hover { box-shadow: 10px 10px 0 #000; }
+
+/* ---------- Tech-stack tiles ---------- */
+.js .tiles .tile {
+    opacity: 0;
+    scale: .7;
+    rotate: -4deg;
+    transition: opacity .5s var(--ease-out), scale .7s var(--ease-spring), rotate .7s var(--ease-spring),
+        translate .25s var(--ease-out), box-shadow .25s var(--ease-out);
+    transition-delay: calc(var(--i) * 45ms);
+}
+.js .tiles.in .tile { opacity: 1; scale: none; rotate: none; }
+.js .tiles.settled .tile { transition-delay: 0ms; }
+.tiles .tile:hover { translate: 0 -6px; box-shadow: 6px 6px 0 #33FF57; }
+
+/* ---------- Experience timeline ---------- */
+.timeline-fill {
+    position: absolute;
+    left: -4px;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    margin: 0 !important;
+    background: #FF2A2A;
+    transform-origin: top;
+    transform: scaleY(0);
+    pointer-events: none;
+}
+.timeline-fill + * { margin-top: 0 !important; }
+.js .reveal .tl-dot { scale: 0; rotate: -135deg; transition: scale .6s var(--ease-spring) .25s, rotate .8s var(--ease-out) .25s; }
+.js .reveal.active .tl-dot { scale: 1; rotate: none; }
+
+/* ---------- Metrics terminal ---------- */
+.crt { position: relative; overflow: hidden; }
+.crt::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -30%;
+    height: 30%;
+    background: linear-gradient(180deg, transparent, rgba(51, 255, 87, .07), transparent);
+    animation: sd-scan 7s linear infinite;
+    pointer-events: none;
+}
+@keyframes sd-scan { to { top: 110%; } }
+
+/* ---------- Magnetic elements ---------- */
+html [data-magnetic] {
+    transition: translate .3s var(--ease-out), transform .15s ease, background-color .15s ease,
+        color .15s ease, box-shadow .15s ease;
+}
+
+/* ---------- Contact form ---------- */
+.is-sending {
+    pointer-events: none;
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .2) 0 12px, transparent 12px 24px) !important;
+    background-size: calc(24px * 1.41421) calc(24px * 1.41421);
+    animation: sd-stripes .6s linear infinite;
+}
+@keyframes sd-stripes { to { background-position: calc(24px * 1.41421) 0; } }
+
+.success-pop { animation: sd-pop .7s var(--ease-spring) both; }
+.success-rise { animation: sd-rise .7s var(--ease-out) .15s both; }
+@keyframes sd-pop { from { scale: .4; opacity: 0; } to { scale: 1; opacity: 1; } }
+@keyframes sd-rise { from { translate: 0 16px; opacity: 0; } }
+
+/* ---------- Reduced motion: everything visible, nothing moves ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        transition-delay: 0s !important;
+        scroll-behavior: auto !important;
+    }
+    .js .reveal, .js [data-split] .char, .js .tiles .tile, .js .hero-shape, .js .reveal .tl-dot, .js nav {
+        opacity: 1 !important;
+        translate: none !important;
+        scale: none !important;
+        rotate: none !important;
+    }
+    .js .reveal .img-wipe::after { transform: scaleX(0) !important; }
+    #preloader { display: none !important; }
+}
