@@ -99,7 +99,7 @@ nav a.nav-active { background-color: #121212; color: #fff; }
 .js .reveal.active { opacity: 1; translate: none; scale: none; rotate: none; }
 
 /* Side-slide reveals start ±64px off-axis; don't let them widen the page on phones. */
-.js body { overflow-x: clip; }
+html.js, .js body { overflow-x: clip; }
 
 /* ---------- Split-text headings ---------- */
 .js [data-split] { visibility: hidden; }

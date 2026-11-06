@@ -1414,6 +1414,11 @@ async function boot() {
     /* ================================================================ */
     /* Sizing                                                            */
     /* ================================================================ */
+    // World x of the left and right edges of the things worth reaching.
+    const PAN_LEFT = -3.5;
+    const PAN_RIGHT = 7.9;
+    const pan = { x: 0, target: 0, min: 0, max: 0, halfW: 1, drag: null, dragged: false, used: false };
+    const canPan = () => pan.max - pan.min > 0.3;
     function fit() {
         const w = innerWidth;
         const h = innerHeight;
@@ -1430,6 +1435,12 @@ async function boot() {
         const halfV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
         camBase.z = Math.max(13, 3.0 / (halfV * aspect) + 1.2);
         camera.updateProjectionMatrix();
+        // On narrow screens the room is wider than the view. Allow a sideways pan
+        // from the figurine (left) to the bookcase speaker and plant (right).
+        pan.halfW = camBase.z * halfV * aspect;
+        pan.min = Math.min(0, PAN_LEFT + pan.halfW);
+        pan.max = Math.max(0, PAN_RIGHT - pan.halfW);
+        pan.target = clamp(pan.target, pan.min, pan.max);
     }
     fit();
 
@@ -1564,8 +1575,27 @@ async function boot() {
     }
 
     on(window, 'pointermove', (e) => { pointer.has = true; setPointer(e); }, { passive: true });
-    on(canvas, 'pointerdown', setPointer);
+    on(canvas, 'pointerdown', (e) => {
+        setPointer(e);
+        pan.dragged = false;
+        if (canPan() && !entering) pan.drag = { id: e.pointerId, x0: e.clientX, from: pan.target };
+    });
+    // Swipe sideways to pan the camera on narrow screens.
+    on(window, 'pointermove', (e) => {
+        const d = pan.drag;
+        if (!d || e.pointerId !== d.id) return;
+        const dx = e.clientX - d.x0;
+        if (Math.abs(dx) > 8) pan.dragged = true;
+        if (!pan.dragged) return;
+        pan.used = true;
+        pan.target = clamp(d.from - (dx / innerWidth) * pan.halfW * 2.2, pan.min, pan.max);
+    }, { passive: true });
+    const endDrag = (e) => { if (pan.drag && e.pointerId === pan.drag.id) pan.drag = null; };
+    on(window, 'pointerup', endDrag);
+    on(window, 'pointercancel', endDrag);
     on(canvas, 'click', (e) => {
+        // A swipe ends with a click event; it should not press anything.
+        if (pan.dragged) { pan.dragged = false; return; }
         setPointer(e);
         const target = pickTarget();
         if (target === 'speaker') toggleMusic();
@@ -1685,14 +1715,19 @@ async function boot() {
             if (p >= 1) finish({ fade: true });
         } else {
             const k = 1 - Math.pow(1 - 0.05, dt * 60);
-            const nx = pointer.has ? pointer.nx : Math.sin(t * 0.4) * 0.35;
-            const ny = pointer.has ? pointer.ny : Math.sin(t * 0.29) * 0.2;
+            // Touch screens have no hover, so the room keeps its slow idle sway there.
+            const follow = pointer.has && finePointer;
+            const sway = canPan() ? 0.4 : 1;
+            const nx = follow ? pointer.nx : Math.sin(t * 0.4) * 0.35 * sway;
+            const ny = follow ? pointer.ny : Math.sin(t * 0.29) * 0.2 * sway;
             world.rotation.y = lerp(world.rotation.y, nx * 0.32, k);
             world.rotation.x = lerp(world.rotation.x, ny * 0.06, k);
             camOff.x = lerp(camOff.x, -nx * 0.9, k);
             camOff.y = lerp(camOff.y, ny * 0.5, k);
-            camera.position.set(camBase.x + camOff.x, camBase.y + camOff.y, camBase.z);
+            pan.x = lerp(pan.x, pan.target, Math.min(1, k * 3));
+            camera.position.set(camBase.x + camOff.x + pan.x, camBase.y + camOff.y, camBase.z);
             look.copy(lookBase);
+            look.x += pan.x;
             camera.lookAt(look);
 
             const target = pointer.has && pointer.overCanvas ? pickTarget() : null;
@@ -1722,7 +1757,10 @@ async function boot() {
                         else hint.textContent = `> ${verb} TO WATER THE PLANT`;
                     }
                     else if (botHot) hint.textContent = `> ${verb} TO ${fig.open ? 'CLOSE THE' : 'OPEN THE'} CHAT`;
-                    else hint.textContent = hot ? `> ${verb} TO BOOT` : `> ${verb} THE MONITOR`;
+                    else if (hot) hint.textContent = `> ${verb} TO BOOT`;
+                    // Until the first swipe, alternate with a pan hint on narrow screens.
+                    else if (canPan() && !pan.used && Math.floor(t / 3) % 2 === 1) hint.textContent = '< SWIPE TO LOOK AROUND >';
+                    else hint.textContent = `> ${verb} THE MONITOR`;
                 }
                 if (hintBox) hintBox.classList.toggle('is-hot', anyHot);
             }

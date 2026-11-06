@@ -36,7 +36,7 @@ html.is-pc-intro body { overflow: hidden; }
     display: block;
     opacity: 0;
     transition: opacity .8s ease;
-    touch-action: manipulation;
+    touch-action: none; /* sideways swipe pans the room on phones */
 }
 #pc-intro.is-ready #pc-canvas { opacity: 1; }
 
@@ -121,6 +121,13 @@ html.is-pc-intro body { overflow: hidden; }
     .pc-tag { display: none; }
 }
 
+/* Phones in landscape: keep the corner buttons and hint small so they cover less of the room. */
+@media (max-height: 500px) {
+    .pc-tag { top: 10px; left: 10px; font-size: 12px; padding: 2px 8px; box-shadow: 3px 3px 0 0 #000; }
+    .pc-skip { top: 10px; right: 10px; font-size: 12px; padding: 5px 10px; box-shadow: 3px 3px 0 0 #000; }
+    .pc-hint { bottom: 4%; padding: 6px 12px; font-size: 12px; }
+}
+
 /* --------------------------------------------------------------------------
    CV chatbot panel (Assets/js/cv-bot.js). Opens bottom-right, so the
    figurine on the left of the desk stays visible.
@@ -132,6 +139,7 @@ html.is-pc-intro body { overflow: hidden; }
     bottom: 24px;
     width: min(400px, calc(100vw - 32px));
     height: min(560px, calc(100vh - 110px));
+    height: min(560px, calc(100dvh - 110px));
     display: flex;
     flex-direction: column;
     background: #FFFDF5;
@@ -285,7 +293,7 @@ html.is-pc-intro body { overflow: hidden; }
 #pc-intro.is-entering .cvb { opacity: 0; pointer-events: none; }
 
 @media (max-width: 639px) {
-    .cvb { right: 8px; left: 8px; bottom: 8px; width: auto; height: min(70vh, 520px); box-shadow: 5px 5px 0 0 #000; }
+    .cvb { right: 8px; left: 8px; bottom: 8px; width: auto; height: min(70vh, 520px); height: min(70dvh, 520px); box-shadow: 5px 5px 0 0 #000; }
 }
 
 @media (prefers-reduced-motion: reduce) {
