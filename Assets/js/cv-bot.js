@@ -71,11 +71,11 @@ const CV = {
             keys: ['deepfake', 'deep fake', 'fake image', 'manipulated media', 'xception', 'xceptionnet'],
             demo: 'https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/',
             code: 'https://github.com/sreedeepghosh2005/Deepfake_detect',
-            tech: ['Python', 'Deep learning', 'CNN & neural network design', 'TensorFlow', 'XceptionNet', 'OpenCV', 'Streamlit'],
+            tech: ['Python', 'Deep learning', 'CNN & neural network design', 'PyTorch', 'timm', 'XceptionNet', 'Streamlit'],
             points: [
                 'Self-trained Convolutional Neural Network (CNN) with a full image preprocessing and training pipeline.',
                 'Raised real-vs-fake classification accuracy through iterative model optimization and hyperparameter tuning.',
-                'Uses TensorFlow, XceptionNet and OpenCV, with a Streamlit front end.',
+                'Uses PyTorch and XceptionNet (timm), with a Streamlit front end.',
             ],
         },
         {

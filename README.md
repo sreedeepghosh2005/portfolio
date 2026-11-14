@@ -17,7 +17,7 @@ Vision    : Technology should feel powerful, not ordinary
 <p align="center"> <img src="https://skillicons.dev/icons?i=react,nextjs,tailwind,nodejs,python,java,cpp,django,php,mysql,git,github" /> </p>
 🧩 CORE_PROJECTS
 [1] Deepfake Detection
-    -> AI system using XceptionNet + TensorFlow
+    -> AI system using XceptionNet + PyTorch
     -> Detects manipulated media
     -> Live demo: https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/
     -> Code: https://github.com/sreedeepghosh2005/Deepfake_detect
