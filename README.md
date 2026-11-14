@@ -19,6 +19,8 @@ Vision    : Technology should feel powerful, not ordinary
 [1] Deepfake Detection
     -> AI system using XceptionNet + TensorFlow
     -> Detects manipulated media
+    -> Live demo: https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/
+    -> Code: https://github.com/sreedeepghosh2005/Deepfake_detect
 
 [2] Decenter Notes
     -> Blockchain-based note app

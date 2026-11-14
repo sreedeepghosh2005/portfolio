@@ -69,6 +69,8 @@ const CV = {
             id: 'deepfake',
             name: 'Deepfake Detection',
             keys: ['deepfake', 'deep fake', 'fake image', 'manipulated media', 'xception', 'xceptionnet'],
+            demo: 'https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/',
+            code: 'https://github.com/sreedeepghosh2005/Deepfake_detect',
             tech: ['Python', 'Deep learning', 'CNN & neural network design', 'TensorFlow', 'XceptionNet', 'OpenCV', 'Streamlit'],
             points: [
                 'Self-trained Convolutional Neural Network (CNN) with a full image preprocessing and training pipeline.',
@@ -222,7 +224,8 @@ const link = (href, label) => `<a href="${esc(href)}" target="_blank" rel="noope
 const ul = (items) => `<ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>`;
 
 function projectCard(p) {
-    return `<b>${esc(p.name)}</b>${ul(p.points.map(esc))}<span class="cvb-tags">${p.tech.map((t) => `<i>${esc(t)}</i>`).join('')}</span>`;
+    const links = [p.demo && link(p.demo, 'Live demo'), p.code && link(p.code, 'Code')].filter(Boolean).join(' · ');
+    return `<b>${esc(p.name)}</b>${ul(p.points.map(esc))}${links ? `${links}<br>` : ''}<span class="cvb-tags">${p.tech.map((t) => `<i>${esc(t)}</i>`).join('')}</span>`;
 }
 
 function answerSkill(skill, wantsProjects) {
