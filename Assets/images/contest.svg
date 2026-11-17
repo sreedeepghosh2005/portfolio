@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#222222" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="#0d0d0d"/>
+  <rect width="800" height="450" fill="url(#grid)" opacity="0.6"/>
+
+  <!-- Window Container -->
+  <rect x="25" y="25" width="750" height="400" rx="4" fill="#141414" stroke="#FBFF48" stroke-width="3"/>
+
+  <!-- Window Titlebar -->
+  <rect x="25" y="25" width="750" height="38" fill="#1b1b1b" stroke="#FBFF48" stroke-width="3"/>
+  <circle cx="45" cy="44" r="6" fill="#FF2A2A"/>
+  <circle cx="65" cy="44" r="6" fill="#FBFF48"/>
+  <circle cx="85" cy="44" r="6" fill="#33FF57"/>
+  <text x="110" y="49" font-family="'Courier New', monospace" font-size="13" font-weight="bold" fill="#FBFF48">&gt; CONTEST_HERE.exe // TIMED_EXECUTION_ENGINE [DOCKER_SANDBOX]</text>
+  <rect x="650" y="32" width="110" height="24" fill="#33FF57" stroke="#000" stroke-width="2"/>
+  <text x="705" y="48" font-family="'Courier New', monospace" font-size="11" font-weight="900" fill="#000" text-anchor="middle">LIVE: 5s SYNC</text>
+
+  <!-- Left: Code Editor -->
+  <rect x="45" y="80" width="380" height="325" fill="#080808" stroke="#333333" stroke-width="2"/>
+  <rect x="45" y="80" width="380" height="28" fill="#1f1f1f"/>
+  <text x="60" y="99" font-family="'Courier New', monospace" font-size="12" fill="#aaaaaa">solution.cpp — C++20 [Sandboxed]</text>
+
+  <!-- Line numbers & code -->
+  <text x="58" y="130" font-family="'Courier New', monospace" font-size="11" fill="#555">01</text>
+  <text x="80" y="130" font-family="'Courier New', monospace" font-size="11" fill="#FF70A6">#include &lt;iostream&gt;</text>
+  <text x="58" y="150" font-family="'Courier New', monospace" font-size="11" fill="#555">02</text>
+  <text x="80" y="150" font-family="'Courier New', monospace" font-size="11" fill="#FF70A6">#include &lt;vector&gt;</text>
+  <text x="58" y="170" font-family="'Courier New', monospace" font-size="11" fill="#555">03</text>
+  <text x="80" y="170" font-family="'Courier New', monospace" font-size="11" fill="#3B82F6">using namespace std;</text>
+  <text x="58" y="195" font-family="'Courier New', monospace" font-size="11" fill="#555">04</text>
+  <text x="80" y="195" font-family="'Courier New', monospace" font-size="11" fill="#FBFF48">int</text>
+  <text x="105" y="195" font-family="'Courier New', monospace" font-size="11" fill="#ffffff">main() {</text>
+  <text x="58" y="215" font-family="'Courier New', monospace" font-size="11" fill="#555">05</text>
+  <text x="100" y="215" font-family="'Courier New', monospace" font-size="11" fill="#33FF57">// Docker container running judge.js</text>
+  <text x="58" y="235" font-family="'Courier New', monospace" font-size="11" fill="#555">06</text>
+  <text x="100" y="235" font-family="'Courier New', monospace" font-size="11" fill="#ffffff">execute_sandbox(stdin, stdout);</text>
+  <text x="58" y="255" font-family="'Courier New', monospace" font-size="11" fill="#555">07</text>
+  <text x="100" y="255" font-family="'Courier New', monospace" font-size="11" fill="#FBFF48">return</text>
+  <text x="150" y="255" font-family="'Courier New', monospace" font-size="11" fill="#3B82F6">0;</text>
+  <text x="58" y="275" font-family="'Courier New', monospace" font-size="11" fill="#555">08</text>
+  <text x="80" y="275" font-family="'Courier New', monospace" font-size="11" fill="#ffffff">}</text>
+
+  <!-- Verdict Banner -->
+  <rect x="60" y="315" width="350" height="42" fill="#1b3320" stroke="#33FF57" stroke-width="1.5"/>
+  <text x="75" y="340" font-family="'Courier New', monospace" font-size="13" font-weight="bold" fill="#33FF57">✓ VERDICT: ACCEPTED (0.014s | 4.2MB)</text>
+  <text x="60" y="385" font-family="'Courier New', monospace" font-size="10" fill="#888888">&gt; SUPPORTED: C / C++ / JAVA / PYTHON 3</text>
+
+  <!-- Right: Live Leaderboard -->
+  <rect x="445" y="80" width="310" height="325" fill="#0d0d0d" stroke="#333333" stroke-width="2"/>
+  <rect x="445" y="80" width="310" height="28" fill="#1f1f1f"/>
+  <text x="460" y="99" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#FBFF48">🏆 LIVE LEADERBOARD</text>
+
+  <!-- Leaderboard table headers -->
+  <text x="460" y="130" font-family="'Courier New', monospace" font-size="10" fill="#777">RANK</text>
+  <text x="505" y="130" font-family="'Courier New', monospace" font-size="10" fill="#777">HANDLE</text>
+  <text x="645" y="130" font-family="'Courier New', monospace" font-size="10" fill="#777">SCORE</text>
+  <text x="705" y="130" font-family="'Courier New', monospace" font-size="10" fill="#777">TIME</text>
+
+  <!-- Row 1 -->
+  <rect x="455" y="142" width="290" height="34" fill="#222718" stroke="#FBFF48" stroke-width="1"/>
+  <text x="470" y="164" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#FBFF48">#1</text>
+  <text x="505" y="164" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#ffffff">sreedeep</text>
+  <text x="650" y="164" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#33FF57">5 / 5</text>
+  <text x="710" y="164" font-family="'Courier New', monospace" font-size="11" fill="#aaaaaa">42m</text>
+
+  <!-- Row 2 -->
+  <rect x="455" y="184" width="290" height="34" fill="#181818" stroke="#333333" stroke-width="1"/>
+  <text x="470" y="206" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#aaaaaa">#2</text>
+  <text x="505" y="206" font-family="'Courier New', monospace" font-size="12" fill="#ffffff">dev_matrix</text>
+  <text x="650" y="206" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#33FF57">4 / 5</text>
+  <text x="710" y="206" font-family="'Courier New', monospace" font-size="11" fill="#aaaaaa">58m</text>
+
+  <!-- Row 3 -->
+  <rect x="455" y="226" width="290" height="34" fill="#181818" stroke="#333333" stroke-width="1"/>
+  <text x="470" y="248" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#cd7f32">#3</text>
+  <text x="505" y="248" font-family="'Courier New', monospace" font-size="12" fill="#ffffff">algo_ace</text>
+  <text x="650" y="248" font-family="'Courier New', monospace" font-size="12" font-weight="bold" fill="#33FF57">4 / 5</text>
+  <text x="710" y="248" font-family="'Courier New', monospace" font-size="11" fill="#aaaaaa">1h 12m</text>
+
+  <!-- Badges footer -->
+  <rect x="455" y="278" width="290" height="110" fill="#141414" stroke="#222" stroke-width="1"/>
+  <text x="470" y="302" font-family="'Courier New', monospace" font-size="11" font-weight="bold" fill="#3B82F6">&gt; PLATFORM STATS</text>
+  <text x="470" y="324" font-family="'Courier New', monospace" font-size="10" fill="#888">DB: SQLite + WAL Mode</text>
+  <text x="470" y="342" font-family="'Courier New', monospace" font-size="10" fill="#888">ISOLATION: Docker Containers</text>
+  <text x="470" y="360" font-family="'Courier New', monospace" font-size="10" fill="#888">REFRESH: Real-time 5s Polling</text>
+  <text x="470" y="378" font-family="'Courier New', monospace" font-size="10" fill="#33FF57">STATUS: PRODUCTION READY</text>
+</svg>

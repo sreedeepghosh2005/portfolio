@@ -5,7 +5,9 @@
 > initializing profile...
 
 Name      : Sreedeep Ghosh
-Role      : Full Stack AI-ML Developer
+Role      : Software Developer | AI/ML Engineering | Automation
+Community : Tech Lead @ GDG On Campus, MCKVIE
+Internship: AI Coding Intern @ J. D. Jones & Co. Pvt. Ltd.
 
 Mission   : Build systems that think, adapt, and scale
 Vision    : Technology should feel powerful, not ordinary
@@ -14,37 +16,43 @@ Vision    : Technology should feel powerful, not ordinary
 🔗 https://sreedeepghosh2005.github.io/portfolio/
 
 ⚙️ TECH_STACK
-<p align="center"> <img src="https://skillicons.dev/icons?i=react,nextjs,tailwind,nodejs,python,java,cpp,django,php,mysql,git,github" /> </p>
+<p align="center"> <img src="https://skillicons.dev/icons?i=python,pytorch,react,nodejs,express,docker,tailwind,sqlite,mongodb,java,cpp,linux,git,github" /> </p>
 🧩 CORE_PROJECTS
-[1] Deepfake Detection
-    -> AI system using XceptionNet + PyTorch
-    -> Detects manipulated media
-    -> Live demo: https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/
+[1] Contest Here | Full-Stack Coding Contest Platform
+    -> Timed coding contest platform with admin panel & test-case configuration
+    -> Docker-isolated judge (C, C++, Java, Python 3) + 5s live leaderboard
+    -> Live: https://sreedeepghosh2005.github.io/contest-here/
+    -> Code: https://github.com/sreedeepghosh2005/contest-here
+
+[2] Deepfake Detect | Xception-Based Classification
+    -> Binary image classifier using PyTorch + timm (87.8% test accuracy)
+    -> Streamlit app with confidence scores, visualizer & PDF reports
+    -> Live: https://sreedeepghosh2005-deepfake-detect-app1-mwbsun.streamlit.app/
     -> Code: https://github.com/sreedeepghosh2005/Deepfake_detect
 
-[2] Decenter Notes
-    -> Blockchain-based note app
-    -> Secure + decentralized
+[3] Taxonomy | eDNA Species Identification
+    -> ML pipeline for species classification from eDNA sequence data
+    -> k-mer extraction, PyTorch autoencoder embeddings & MLP classifier
 
-[3] GWLR Detection
-    -> ML-based anomaly detection system
-
-[4] eDNA Taxonomy
-    -> Bioinformatics classification using DNA data
+[4] DWLR | Groundwater Monitoring & Forecasting
+    -> Telemetry data pipeline for Digital Water Level Recorder (DWLR)
+    -> Storage, water-level trend analysis, and time-series forecasting
 📊 SYSTEM_METRICS
 <p align="center"> <img src="https://github-readme-stats.vercel.app/api?username=sreedeepghosh2005&show_icons=true&theme=radical&border_radius=10"/> <img src="https://github-readme-streak-stats.herokuapp.com/?user=sreedeepghosh2005&theme=radical&border_radius=10"/> </p>
 🧪 CURRENT_PROCESS
-> building: deepfake detection system
-> exploring: blockchain + ai
-> learning: advanced deep learning
-> focus: real-world systems
+> role: AI Coding Intern @ J. D. Jones & Co. Pvt. Ltd.
+> lead: Tech Lead – AI/ML & Automation @ GDG On Campus MCKVIE
+> platform: Contest Here (Docker automated judge + real-time leaderboard)
+> research: Deepfake Detection (87.8% accuracy) & eDNA Taxonomy
 📁 PROJECT_STRUCTURE
 
 ```
 .
 ├── Assets/
+│   ├── css/             # animations.css & pc-intro.css
+│   ├── js/              # animations.js & pc-intro.js
 │   ├── images/          # Project thumbnails & Avatar
-│   └── Resume/          # CV PDF file
+│   └── Resume/          # CV PDF file (SreedeepResume.pdf)
 ├── index.html           # Main Entry Point
 └── README.md            # You are here
 ```
@@ -54,8 +62,9 @@ cd portfolio
 open index.html
 📬 CONTACT
 EMAIL    : sreedeepghosh2005yt@gmail.com
-LOCATION : Kolkata / Remote
-STATUS   : Available for work
+PHONE    : +91 9007796421
+LOCATION : Howrah, West Bengal, India
+STATUS   : Open to collaboration & opportunities
 🔗 CONNECT
 <p align="center"> <a href="https://github.com/sreedeepghosh2005"> <img src="https://skillicons.dev/icons?i=github"/> </a> <a href="https://www.linkedin.com/in/sreedeep-ghosh-186b33324"> <img src="https://skillicons.dev/icons?i=linkedin"/> </a> </p>
 ⚡ SYSTEM_NOTE
