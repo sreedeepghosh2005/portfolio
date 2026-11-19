@@ -317,22 +317,30 @@
         document.addEventListener('mouseup', () => cursor.classList.remove('is-down'));
     }
 
+    const hoverRects = []; // reset functions for cached hover rects
     if (richPointer) {
+        // Rects are measured on mouseenter (and again after a scroll), not on every
+        // mousemove: reading layout right after writing a style forces a reflow.
         $$('[data-magnetic]').forEach((el) => {
             const strength = parseFloat(el.dataset.magnetic) || 0.3;
+            let r = null;
+            el.addEventListener('mouseenter', () => { r = el.getBoundingClientRect(); });
+            hoverRects.push(() => { r = null; });
             el.addEventListener('mousemove', (e) => {
-                const r = el.getBoundingClientRect();
+                if (!r) r = el.getBoundingClientRect();
                 const dx = e.clientX - (r.left + r.width / 2);
                 const dy = e.clientY - (r.top + r.height / 2);
                 el.style.translate = `${(dx * strength).toFixed(1)}px ${(dy * strength).toFixed(1)}px`;
             });
-            el.addEventListener('mouseleave', () => { el.style.translate = ''; });
+            el.addEventListener('mouseleave', () => { el.style.translate = ''; r = null; });
         });
 
         $$('[data-tilt]').forEach((card) => {
+            let r = null;
+            hoverRects.push(() => { r = null; });
             card.addEventListener('mousemove', (e) => {
                 if (!card.classList.contains('active')) return;
-                const r = card.getBoundingClientRect();
+                if (!r) r = card.getBoundingClientRect();
                 const px = (e.clientX - r.left) / r.width - 0.5;
                 const py = (e.clientY - r.top) / r.height - 0.5;
                 card.classList.add('is-tilting');
@@ -340,6 +348,7 @@
                     `perspective(1000px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 7).toFixed(2)}deg)`;
             });
             card.addEventListener('mouseleave', () => {
+                r = null;
                 card.classList.remove('is-tilting');
                 card.style.transform = '';
             });
@@ -388,14 +397,36 @@
     let lastY = -1;
     let marqueeRate = 1;
     let loaded = false;
+    let raf = 0;
+
+    // The loop only runs while something is moving. Scroll, pointer and
+    // resize events wake it. It stops itself once everything has settled.
+    function wake() {
+        if (!raf) raf = requestAnimationFrame(frame);
+    }
 
     function frame() {
+        raf = 0;
         const y = scrollY;
         const vh = innerHeight;
         const dy = lastY < 0 ? 0 : y - lastY;
+        const scrolled = y !== lastY;
+        let busy = scrolled;
 
-        if (y !== lastY) {
-            const max = document.documentElement.scrollHeight - vh;
+        // 1. Read layout first. Reading after a style write forces a reflow.
+        let max = 0;
+        let tlRect = null;
+        let footRect = null;
+        let hostRects = null;
+        if (scrolled) {
+            max = document.documentElement.scrollHeight - vh;
+            if (timeline && timelineFill) tlRect = timeline.getBoundingClientRect();
+            if (parallax.length) hostRects = parallax.map((p) => p.host.getBoundingClientRect());
+            if (bang && footer) footRect = footer.getBoundingClientRect();
+        }
+
+        // 2. Then write.
+        if (scrolled) {
             if (bar) bar.style.transform = `scaleX(${max > 0 ? clamp(y / max, 0, 1) : 0})`;
 
             if (nav && loaded) {
@@ -403,22 +434,22 @@
                 else if (dy < -4 || y <= 160) nav.classList.remove('nav-hidden');
             }
 
-            if (timeline && timelineFill) {
-                const r = timeline.getBoundingClientRect();
-                const p = clamp((vh * 0.6 - r.top) / r.height, 0, 1);
+            if (tlRect) {
+                const p = clamp((vh * 0.6 - tlRect.top) / tlRect.height, 0, 1);
                 timelineFill.style.transform = `scaleY(${p.toFixed(4)})`;
             }
 
-            parallax.forEach(({ el, speed, host }) => {
-                const r = host.getBoundingClientRect();
-                if (r.bottom < 0 || r.top > vh) return;
-                const off = (r.top + r.height / 2 - vh / 2) * speed;
-                el.style.translate = `0 ${off.toFixed(1)}px`;
-            });
+            if (hostRects) {
+                parallax.forEach(({ el, speed }, i) => {
+                    const r = hostRects[i];
+                    if (r.bottom < 0 || r.top > vh) return;
+                    const off = (r.top + r.height / 2 - vh / 2) * speed;
+                    el.style.translate = `0 ${off.toFixed(1)}px`;
+                });
+            }
 
-            if (bang && footer) {
-                const r = footer.getBoundingClientRect();
-                const p = clamp((vh - r.top) / r.height, 0, 1);
+            if (footRect) {
+                const p = clamp((vh - footRect.top) / footRect.height, 0, 1);
                 bang.style.translate = `0 ${((1 - p) * 140).toFixed(1)}px`;
             }
             lastY = y;
@@ -431,6 +462,10 @@
             if (Math.abs(next - marqueeRate) > 0.004) {
                 marqueeRate = next;
                 marqueeAnims.forEach((a) => { a.playbackRate = marqueeRate; });
+                busy = true;
+            } else if (marqueeRate !== 1 && target === 1) {
+                marqueeRate = 1;
+                marqueeAnims.forEach((a) => { a.playbackRate = 1; });
             }
         }
 
@@ -438,6 +473,8 @@
             const t = reduceMotion ? 1 : 0.22;
             cursorPos.x = lerp(cursorPos.x, mouse.x, t);
             cursorPos.y = lerp(cursorPos.y, mouse.y, t);
+            if (Math.abs(mouse.x - cursorPos.x) + Math.abs(mouse.y - cursorPos.y) > 0.2) busy = true;
+            else { cursorPos.x = mouse.x; cursorPos.y = mouse.y; }
             cursor.style.transform =
                 `translate3d(${cursorPos.x.toFixed(1)}px, ${cursorPos.y.toFixed(1)}px, 0) translate(-50%, -50%)`;
         }
@@ -446,15 +483,25 @@
             const nx = mouse.x / innerWidth - 0.5;
             const ny = mouse.y / vh - 0.5;
             heroShapes.forEach((s) => {
-                s.x = lerp(s.x, nx * 40 * s.depth, 0.06);
-                s.y = lerp(s.y, ny * 40 * s.depth, 0.06);
+                const tx = nx * 40 * s.depth;
+                const ty = ny * 40 * s.depth;
+                s.x = lerp(s.x, tx, 0.06);
+                s.y = lerp(s.y, ty, 0.06);
+                if (Math.abs(tx - s.x) + Math.abs(ty - s.y) > 0.1) busy = true;
                 s.el.style.translate = `${s.x.toFixed(1)}px ${s.y.toFixed(1)}px`;
             });
         }
 
-        requestAnimationFrame(frame);
+        if (busy) wake();
     }
-    requestAnimationFrame(frame);
+
+    addEventListener('scroll', () => {
+        hoverRects.forEach((reset) => reset());
+        wake();
+    }, { passive: true });
+    addEventListener('resize', () => { lastY = -1; wake(); }, { passive: true });
+    if (finePointer) document.addEventListener('mousemove', wake, { passive: true });
+    wake();
 
     /* ---------------------------------------------------------------- */
     /* Go                                                                */
@@ -464,6 +511,7 @@
     const startSite = () => {
         loaded = true;
         document.body.classList.add('loaded');
+        wake();
         const hero = $('[data-split="hero"]');
         if (hero) hero.classList.add('in');
         setTimeout(startScrollSequences, 250);

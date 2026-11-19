@@ -237,9 +237,12 @@ body.loaded .scroll-cue { opacity: 1; }
     height: 30%;
     background: linear-gradient(180deg, transparent, rgba(51, 255, 87, .07), transparent);
     animation: sd-scan 7s linear infinite;
+    will-change: transform;
     pointer-events: none;
 }
-@keyframes sd-scan { to { top: 110%; } }
+/* Moves by transform, not `top`, so it never triggers layout.
+   top:-30% to top:110% = 140% of the parent = 466.67% of the 30%-tall bar. */
+@keyframes sd-scan { to { transform: translateY(466.67%); } }
 
 /* ---------- Magnetic elements ---------- */
 html [data-magnetic] {

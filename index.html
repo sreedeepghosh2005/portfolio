@@ -42,9 +42,6 @@
     <title>SREEDEEP GHOSH | Software Developer • AI/ML • Automation</title>
     <!-- Theme & Performance -->
     <meta name="theme-color" content="#121212">
-    <link rel="preload"
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Space+Grotesk:wght@800&display=swap"
-        as="style">
 
     <!-- JSON-LD Structured Data for Search Engines -->
     <script type="application/ld+json">
@@ -100,7 +97,14 @@
                 if (ss.getItem('sd-intro') || rm) h.classList.add('skip-intro');
                 // 3D PC intro (Assets/js/pc-intro.js): first visit per session only.
                 if (ss.getItem('sd-pc') || rm) h.classList.add('skip-pc');
-                else h.classList.add('is-pc-intro');
+                else {
+                    h.classList.add('is-pc-intro');
+                    // Fetch three.js while the page parses (Assets/js/pc-intro.js imports it).
+                    var mp = d.createElement('link');
+                    mp.rel = 'modulepreload';
+                    mp.href = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+                    d.head.appendChild(mp);
+                }
             } catch (e) { h.classList.add('skip-intro'); h.classList.add('skip-pc'); }
             d.addEventListener('DOMContentLoaded', function () {
                 if (!w.__sdMotion) {
@@ -111,46 +115,18 @@
         })(document, window);
     </script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link type="logo" rel="icon" href="Assets/images/title_icon.png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" sizes="32x32" href="Assets/images/icon-32.png">
+    <link rel="apple-touch-icon" href="Assets/images/icon-180.png">
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'neo-yellow': '#FBFF48',
-                        'neo-pink': '#FF70A6',
-                        'neo-blue': '#3B82F6',
-                        'neo-green': '#33FF57',
-                        'neo-purple': '#A855F7',
-                        'neo-orange': '#FF9F1C',
-                        'neo-red': '#FF2A2A',
-                        'neo-white': '#FFFDF5',
-                        'neo-black': '#121212',
-                    },
-                    fontFamily: {
-                        'display': ['"Space Grotesk"', 'sans-serif'],
-                        'mono': ['"JetBrains Mono"', 'monospace'],
-                    },
-                    boxShadow: {
-                        'hard': '4px 4px 0px 0px #000',
-                        'hard-sm': '2px 2px 0px 0px #000',
-                        'hard-lg': '8px 8px 0px 0px #000',
-                        'hard-xl': '12px 12px 0px 0px #000',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="Assets/css/tailwind.css?v=1">
 
     <style>
         /* Base Styles */
@@ -271,7 +247,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="Assets/css/animations.css?v=2">
+    <link rel="stylesheet" href="Assets/css/animations.css?v=3">
     <link rel="stylesheet" href="Assets/css/pc-intro.css?v=3">
     <script type="importmap">
         {
@@ -406,7 +382,7 @@
         <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
             <div class="md:col-span-4 reveal" data-reveal="left">
                 <div class="img-wipe aspect-square bg-gray-200 border-4 border-black relative shadow-hard overflow-hidden group">
-                    <img src="Assets/images/AVATAR.png" alt="Sreedeep"
+                    <img src="Assets/images/AVATAR.webp" alt="Sreedeep" width="800" height="1200" decoding="async"
                         class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
                     <span
                         class="absolute top-2 left-2 bg-neo-red text-white px-2 font-mono text-xs border border-black z-10">AVATAR.JPG</span>
@@ -865,7 +841,7 @@
             <!-- Project 1: Contest Here -->
             <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard">
                 <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#33FF57">
-                    <img src="Assets/images/contest.svg" alt="Contest Here Platform"
+                    <img src="Assets/images/contest.svg" alt="Contest Here Platform" loading="lazy" decoding="async"
                         class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
                 </div>
                 <div class="flex justify-between items-start">
@@ -899,7 +875,7 @@
             <!-- Project 2: Deepfake Detect -->
             <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
                 <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF2A2A">
-                    <img src="Assets/images/deepfake.png" alt="Deepfake Detection"
+                    <img src="Assets/images/deepfake.webp" alt="Deepfake Detection" width="1200" height="670" loading="lazy" decoding="async"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
                 <div class="flex justify-between items-start">
@@ -933,7 +909,7 @@
             <!-- Project 3: Taxonomy | eDNA Species Identification -->
             <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard">
                 <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF9F1C">
-                    <img src="Assets/images/edna.png" alt="eDNA Taxonomy"
+                    <img src="Assets/images/edna.webp" alt="eDNA Taxonomy" width="1200" height="670" loading="lazy" decoding="async"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
                 <div class="flex justify-between items-start">
@@ -961,7 +937,7 @@
             <!-- Project 4: DWLR | Groundwater Level Monitoring -->
             <article data-reveal="tilt" data-tilt class="reveal group bg-white border-4 border-black p-4 shadow-hard mt-0 md:mt-20">
                 <div class="img-wipe bg-black border-2 border-black aspect-video relative overflow-hidden mb-6" style="--wipe:#FF70A6">
-                    <img src="Assets/images/gwlr.png" alt="DWLR Groundwater Monitoring"
+                    <img src="Assets/images/gwlr.webp" alt="DWLR Groundwater Monitoring" width="1024" height="1024" loading="lazy" decoding="async"
                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
                 </div>
                 <div class="flex justify-between items-start">
@@ -1289,8 +1265,8 @@
         </div>
     </footer>
 
-    <script src="Assets/js/animations.js"></script>
-    <script type="module" src="Assets/js/pc-intro.js?v=7"></script>
+    <script src="Assets/js/animations.js?v=2"></script>
+    <script type="module" src="Assets/js/pc-intro.js?v=8"></script>
 </body>
 
 

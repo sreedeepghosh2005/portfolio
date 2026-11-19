@@ -121,11 +121,16 @@ async function boot() {
     /* ================================================================ */
     /* Renderer, scene, camera, post                                     */
     /* ================================================================ */
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: lowPower, powerPreference: 'high-performance' });
     renderer.toneMapping = THREE.AgXToneMapping;
     renderer.toneMappingExposure = 1.15;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // The room barely moves, so the shadow maps are drawn once and then only
+    // when the watering can or the waving figurine needs them (see tick()).
+    // Rendering two shadow maps every frame was the biggest GPU cost.
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
     RectAreaLightUniformsLib.init();
     const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
@@ -1419,11 +1424,13 @@ async function boot() {
     const PAN_RIGHT = 7.9;
     const pan = { x: 0, target: 0, min: 0, max: 0, halfW: 1, drag: null, dragged: false, used: false };
     const canPan = () => pan.max - pan.min > 0.3;
+    // Adaptive quality: tick() lowers this cap (and drops bloom) on slow GPUs.
+    const quality = { prCap: lowPower ? 1.5 : 2, cooldown: 1.5, acc: 0, frames: 0, lastAvg: 0, done: false };
     function fit() {
         const w = innerWidth;
         const h = innerHeight;
         const aspect = w / h;
-        const pr = Math.min(devicePixelRatio, lowPower ? 1.5 : 2);
+        const pr = Math.min(devicePixelRatio, quality.prCap);
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
         if (composer) {
@@ -1449,8 +1456,9 @@ async function boot() {
     /* ================================================================ */
     const ac = new AbortController();
     const on = (el, type, fn, opts = {}) => el.addEventListener(type, fn, { ...opts, signal: ac.signal });
-    const pointer = { nx: 0, ny: 0, has: false, overCanvas: false, ndc: new THREE.Vector2(9, 9) };
+    const pointer = { nx: 0, ny: 0, has: false, overCanvas: false, moved: false, ndc: new THREE.Vector2(9, 9) };
     const setPointer = (e) => {
+        pointer.moved = true;
         pointer.nx = e.clientX / innerWidth - 0.5;
         pointer.ny = e.clientY / innerHeight - 0.5;
         pointer.ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
@@ -1668,9 +1676,42 @@ async function boot() {
     let lastUi = 0;
     let firstFrame = true;
     const SPEED = 0.07;
+    let lastPick = 0;
+    let pickedTarget = null;
+    let lastShadow = 0;
+
+    // Steps tried in order when frames are slow: lower resolution first, then no bloom.
+    function lowerQuality() {
+        if (quality.prCap > 1.5) quality.prCap = 1.5;
+        else if (composer) {
+            composer.dispose();
+            composer = null;
+        } else if (quality.prCap > 0.75) quality.prCap = Math.max(0.75, quality.prCap - 0.25);
+        else return false;
+        fit();
+        return true;
+    }
+    function adaptQuality(raw) {
+        if (quality.done || entering) return;
+        if (quality.cooldown > 0) { quality.cooldown -= raw; return; }
+        quality.acc += raw;
+        quality.frames++;
+        if (quality.acc < 1) return;
+        const avg = quality.acc / quality.frames;
+        quality.acc = 0;
+        quality.frames = 0;
+        // Last step did not help (e.g. a 30 Hz screen or battery saver): stop.
+        if (quality.lastAvg && avg > quality.lastAvg * 0.9) { quality.done = true; return; }
+        if (avg <= 1 / 45) { quality.lastAvg = 0; return; }
+        quality.lastAvg = avg;
+        if (!lowerQuality()) quality.done = true;
+        quality.cooldown = 0.5;
+    }
 
     function tick() {
-        const dt = Math.min(clock.getDelta(), 0.05);
+        const raw = clock.getDelta();
+        const dt = Math.min(raw, 0.05);
+        adaptQuality(raw);
         const t = clock.elapsedTime;
         if (!finished && !root.classList.contains('is-pc-intro')) { finish({ fade: false }); return; }
 
@@ -1730,7 +1771,12 @@ async function boot() {
             look.x += pan.x;
             camera.lookAt(look);
 
-            const target = pointer.has && pointer.overCanvas ? pickTarget() : null;
+            if (pointer.moved || t - lastPick > 0.15) {
+                pointer.moved = false;
+                lastPick = t;
+                pickedTarget = pointer.has && pointer.overCanvas ? pickTarget() : null;
+            }
+            const target = pickedTarget;
             const hot = target === 'monitor';
             const spkHot = target === 'speaker';
             const botHot = target === 'bot' && !!cvBot;
@@ -1766,6 +1812,20 @@ async function boot() {
             }
             head.scale.setScalar(lerp(head.scale.x, hot ? 1.03 : 1, k * 2));
             screenMat.color.setScalar(lerp(screenMat.color.r, hot ? 1.1 : 0.95, k * 2));
+        }
+
+        // Shadows: redraw at ~15 Hz only while a shadow caster really moves.
+        if ((water.show > 0.02 || fig.hot || fig.open) && t - lastShadow > 0.066) {
+            lastShadow = t;
+            renderer.shadowMap.needsUpdate = true;
+        }
+        // The whole room (lights included) turns as one, so old shadow maps stay
+        // valid. Their matrices still have to follow the turn, and three.js only
+        // updates them when it redraws the map.
+        if (!renderer.shadowMap.needsUpdate) {
+            scene.updateMatrixWorld();
+            moon.shadow.updateMatrices(moon);
+            if (spot.castShadow) spot.shadow.updateMatrices(spot);
         }
 
         if (composer) composer.render(dt);
